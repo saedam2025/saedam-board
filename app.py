@@ -20,7 +20,7 @@ def save_posts(posts):
 @app.route('/')
 def index():
     posts = load_posts()
-    posts.reverse()  # 최신 글 먼저
+    posts.reverse()  # 최신 글이 위로
     return render_template('index.html', posts=posts)
 
 @app.route('/write', methods=['GET', 'POST'])
@@ -51,3 +51,8 @@ def post(index):
         post = posts[index]
         return render_template('post.html', post=post)
     return '글을 찾을 수 없습니다', 404
+
+# 🔥 반드시 맨 아래!
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
