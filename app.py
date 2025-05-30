@@ -1,16 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
 import json
 import os
-from uuid import uuid4
+from datetime import datetime
 
 app = Flask(__name__)
+
 DATA_FILE = 'data.json'
 
 def load_posts():
-    if not os.path.exists(DATA_FILE):
-        return []
-    with open(DATA_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
 
 def save_posts(posts):
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
@@ -19,29 +20,34 @@ def save_posts(posts):
 @app.route('/')
 def index():
     posts = load_posts()
-    return render_template('index.html', posts=posts[::-1])
+    posts.reverse()  # 최신 글 먼저
+    return render_template('index.html', posts=posts)
 
 @app.route('/write', methods=['GET', 'POST'])
 def write():
     if request.method == 'POST':
-        posts = load_posts()
-        post = {
-            'id': str(uuid4()),
-            'title': request.form['title'],
-            'content': request.form['content']
+        title = request.form['title']
+        author = request.form['author']
+        content = request.form['content']
+        date = datetime.now().strftime('%Y-%m-%d %H:%M')
+
+        new_post = {
+            'title': title,
+            'author': author,
+            'content': content,
+            'date': date
         }
-        posts.append(post)
+
+        posts = load_posts()
+        posts.append(new_post)
         save_posts(posts)
-        return redirect(url_for('index'))
+        return redirect('/')
     return render_template('write.html')
 
-@app.route('/post/<post_id>')
-def post(post_id):
+@app.route('/post/<int:index>')
+def post(index):
     posts = load_posts()
-    for p in posts:
-        if p['id'] == post_id:
-            return render_template('post.html', post=p)
-    return "글을 찾을 수 없습니다.", 404
-
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=10000)
+    if 0 <= index < len(posts):
+        post = posts[index]
+        return render_template('post.html', post=post)
+    return '글을 찾을 수 없습니다', 404
