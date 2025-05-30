@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>공지사항</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h2>공지사항</h2>
+  <a href="/write">글쓰기</a>
+  <ul>
+    {% for post in posts %}
+      <li><a href="/post/{{ post.id }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
